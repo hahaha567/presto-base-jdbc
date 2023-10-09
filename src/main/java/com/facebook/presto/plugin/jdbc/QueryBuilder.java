@@ -105,7 +105,9 @@ public class QueryBuilder
             String table,
             List<JdbcColumnHandle> columns,
             TupleDomain<ColumnHandle> tupleDomain,
-            Optional<JdbcExpression> additionalPredicate)
+            Optional<JdbcExpression> additionalPredicate,
+            Long start,
+            Long length)
             throws SQLException
     {
         StringBuilder sql = new StringBuilder();

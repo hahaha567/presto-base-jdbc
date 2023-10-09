@@ -40,6 +40,8 @@ public class JdbcSplit
     private final String tableName;
     private final TupleDomain<ColumnHandle> tupleDomain;
     private final Optional<JdbcExpression> additionalPredicate;
+    private final Long start;
+    private final Long length;
 
     @JsonCreator
     public JdbcSplit(
@@ -48,7 +50,9 @@ public class JdbcSplit
             @JsonProperty("schemaName") @Nullable String schemaName,
             @JsonProperty("tableName") String tableName,
             @JsonProperty("tupleDomain") TupleDomain<ColumnHandle> tupleDomain,
-            @JsonProperty("additionalProperty") Optional<JdbcExpression> additionalPredicate)
+            @JsonProperty("additionalProperty") Optional<JdbcExpression> additionalPredicate,
+            @JsonProperty("start") Long start,
+            @JsonProperty("length") Long length)
     {
         this.connectorId = requireNonNull(connectorId, "connector id is null");
         this.catalogName = catalogName;
@@ -56,6 +60,8 @@ public class JdbcSplit
         this.tableName = requireNonNull(tableName, "table name is null");
         this.tupleDomain = requireNonNull(tupleDomain, "tupleDomain is null");
         this.additionalPredicate = requireNonNull(additionalPredicate, "additionalPredicate is null");
+        this.start = start;
+        this.length = length;
     }
 
     @JsonProperty
@@ -117,5 +123,17 @@ public class JdbcSplit
     public Object getInfo()
     {
         return this;
+    }
+
+    @JsonProperty
+    @Nullable
+    public Long getStart() {
+        return start;
+    }
+
+    @JsonProperty
+    @Nullable
+    public Long getLength() {
+        return length;
     }
 }

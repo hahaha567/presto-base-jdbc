@@ -267,14 +267,30 @@ public class BaseJdbcClient
     public ConnectorSplitSource getSplits(JdbcIdentity identity, JdbcTableLayoutHandle layoutHandle)
     {
         JdbcTableHandle tableHandle = layoutHandle.getTable();
-        JdbcSplit jdbcSplit = new JdbcSplit(
-                connectorId,
-                tableHandle.getCatalogName(),
-                tableHandle.getSchemaName(),
-                tableHandle.getTableName(),
-                layoutHandle.getTupleDomain(),
-                layoutHandle.getAdditionalPredicate());
-        return new FixedSplitSource(ImmutableList.of(jdbcSplit));
+        Long rowsNum = getRows(identity, tableHandle);
+        List<JdbcSplit> jdbcSplits = JdbcSubTableManager.getTableSplits(connectorId, identity,
+                layoutHandle, tableHandle, rowsNum);
+        return new FixedSplitSource(jdbcSplits);
+    }
+
+    private Long getRows(JdbcIdentity identity, JdbcTableHandle tableHandle) {
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT count(*) FROM ");
+        sql.append(quoted(tableHandle.getCatalogName(), tableHandle.getSchemaName(), tableHandle.getTableName()));
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
+        try {
+            Connection connection = connectionFactory.openConnection(identity);
+            statement = getPreparedStatement(connection, sql.toString());
+            resultSet = statement.executeQuery();
+            if (resultSet != null) {
+                resultSet.next();
+                return resultSet.getLong(1);
+            }
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        return null;
     }
 
     @Override
@@ -305,7 +321,9 @@ public class BaseJdbcClient
                 split.getTableName(),
                 columnHandles,
                 split.getTupleDomain(),
-                split.getAdditionalPredicate());
+                split.getAdditionalPredicate(),
+                split.getStart(),
+                split.getLength());
     }
 
     @Override
