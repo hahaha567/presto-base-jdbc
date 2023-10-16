@@ -151,6 +151,10 @@ public class QueryBuilder
         sql.append(String.format("/* %s : %s */", session.getUser(), session.getQueryId()));
         PreparedStatement statement = client.getPreparedStatement(connection, sql.toString());
 
+        if (start != null && length != null) {
+            sql.append(" LIMIT ").append(start).append(" , ").append(length);
+        }
+
         for (int i = 0; i < accumulator.size(); i++) {
             TypeAndValue typeAndValue = accumulator.get(i);
             if (typeAndValue.getType().equals(BigintType.BIGINT)) {
